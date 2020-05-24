@@ -1,9 +1,14 @@
 {
   "name": "paths-tree-unist",
+  "description": "Unist compatible paths-to-tree parser.",
+  "author": {
+    "name": "Tomáš Bončo"
+  },
+  "homepage": "https://github.com/tomasbonco/paths-tree-unist",
+  "license": "MIT",
   "version": "1.0.0",
   "main": "dist/node/index.js",
   "module": "dist/browser/index.js",
-  "license": "MIT",
   "scripts": {
     "test": "jest",
     "build": "npm-run-all build:node build:browser",
