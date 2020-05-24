@@ -1,0 +1,32 @@
+{
+  "name": "paths-tree-unist",
+  "version": "1.0.0",
+  "main": "dist/node/index.js",
+  "module": "dist/browser/index.js",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest",
+    "build": "npm-run-all build:node build:browser",
+    "build:node": "tsc -p tsconfig.json --outDir dist/node -m none",
+	"build:browser": "ttsc -p tsconfig.json --outDir dist/browser -m ES6",
+	"watch": "npm-run-all build:node build:browser",
+    "watch:node": "tsc -w -p tsconfig.json --outDir dist/node -m none",
+	"watch:browser": "ttsc -w -p tsconfig.json --outDir dist/browser -m ES6",
+	"prepublish": "npm run build"
+  },
+  "dependencies": {
+    "unist-util-find": "^1.0.1",
+    "unist-util-map": "^2.0.1",
+    "unist-util-visit": "^2.0.2",
+    "unist-util-visit-parents": "^3.0.2"
+  },
+  "types": "dist/browser",
+  "devDependencies": {
+    "@zoltu/typescript-transformer-append-js-extension": "^1.0.1",
+    "ttypescript": "^1.5.10",
+    "typescript": "^3.9.3",
+    "@types/jest": "^25.2.3",
+    "npm-run-all": "^4.1.5",
+    "jest": "^26.0.1"
+  }
+}
