@@ -13,15 +13,18 @@
     "test": "jest",
     "build": "npm-run-all build:node build:browser",
     "build:node": "tsc -p tsconfig.json --outDir dist/node -m none",
-	"build:browser": "ttsc -p tsconfig.json --outDir dist/browser -m ES6",
-	"watch": "npm-run-all build:node build:browser",
+    "build:browser": "ttsc -p tsconfig.json --outDir dist/browser -m ES6",
+    "watch": "npm-run-all watch:node watch:browser",
     "watch:node": "tsc -w -p tsconfig.json --outDir dist/node -m none",
-	"watch:browser": "ttsc -w -p tsconfig.json --outDir dist/browser -m ES6",
-	"prepublish": "npm run build"
+    "watch:browser": "ttsc -w -p tsconfig.json --outDir dist/browser -m ES6",
+    "prepublish": "npm run build"
   },
-  "files": [ "dist" ],
+  "files": [
+    "dist"
+  ],
   "dependencies": {
-    "unist-util-find": "^1.0.1",
+    "immer": "^9.0.3",
+    "unist-util-find": "^1.0.2",
     "unist-util-map": "^2.0.1",
     "unist-util-visit": "^2.0.2",
     "unist-util-visit-parents": "^3.0.2"

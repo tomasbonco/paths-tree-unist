@@ -2,6 +2,7 @@ import { Node, InputEntry, IOptions, Parent } from './interfaces'
 import { getDefaultOptions, parse, addEntry, createRoot, createNode } from './parser';
 import find from 'unist-util-find'
 import visitParents from 'unist-util-visit-parents'
+import produce from 'immer'
 export * from './interfaces'
 export * from './parser'
 export * from './transformers/distingish-files-and-folders'
@@ -60,9 +61,12 @@ export class Manager<T>
 	 */
 	async addEntry( entry: InputEntry )
 	{
-		const tree = await this.toWorking( this.tree );
-		addEntry( tree as Parent<T>, entry, this.options )
-		this.tree = await this.toFinal( tree );
+		this.tree = await produce( this.tree, async draft =>
+		{
+			const tree = await this.toWorking( draft as any );
+			addEntry( tree as Parent<T>, entry, this.options )
+			await this.toFinal( tree );
+		})
 		
 		return this;
 	}
@@ -74,9 +78,9 @@ export class Manager<T>
 	 */
 	setActive( item: string | Node<T> )
 	{
-		const node = this.pathToNode( item );
+		this.open( item );
 
-		this.open( node );
+		const node = this.pathToNode( this.tree, item );
 		this.activeNode = node;
 
 		return this;
@@ -98,15 +102,20 @@ export class Manager<T>
 	 */
 	open( item: string | Node<T> ): Manager<T>
 	{
-		const node = this.pathToNode( item );
+		const x = this.tree;
 
-		visitParents( this.tree as any, n => n === (node as any), visitor )
-		
-		function visitor( node, parents )
+		this.tree = produce( this.tree, draft =>
 		{
-			node.data.isOpen = true;
-			parents.forEach( ( p: Node<T>) => p.data.isOpen = true );
-		}
+			const node = this.pathToNode( draft, item );
+
+			visitParents( draft as any, n => n === (node as any), visitor )
+			
+			function visitor( node, parents )
+			{
+				node.data.isOpen = true;
+				parents.forEach( ( p: Node<T>) => p.data.isOpen = true );
+			}
+		})
 
 		return this;
 	}
@@ -129,13 +138,18 @@ export class Manager<T>
 	 */
 	close( item: string | Node<T> ): Manager<T>
 	{
-		const node = this.pathToNode( item );  
-		if ( ! node ) return this;
+		const node = this.pathToNode( this.tree, item );  
+		if ( ! node ) return;
 
-		if ( this.canBeClosed( node ) )
+		this.tree = produce( this.tree, draft =>
 		{
-			node.data.isOpen = false;
-		}
+			const draftNode = this.pathToNode( draft, item );  
+
+			if ( this.canBeClosed( node ) )
+			{
+				draftNode.data.isOpen = false;
+			}
+		})
 
 		return this;
 	}
@@ -148,7 +162,7 @@ export class Manager<T>
 	 */
 	canBeClosed( item: string | Node<T> ): boolean
 	{
-		const node = this.pathToNode( item );
+		const node = this.pathToNode( this.tree, item );
 		let result = true
 
 		if ( node === this.activeNode )
@@ -161,7 +175,7 @@ export class Manager<T>
 		function visitor( _node, parents )
 		{
 			const isParentOfActiveItem = parents.find( parent => parent === node )
-
+			
 			if ( isParentOfActiveItem )
 			{
 				result = false;
@@ -180,7 +194,7 @@ export class Manager<T>
 	{
 		try
 		{
-			return this.pathToNode( path );
+			return this.pathToNode( this.tree, path );
 		}
 
 		catch (e)
@@ -189,17 +203,17 @@ export class Manager<T>
 		}
 	}
 
-	private pathToNode( path: string | Node<T> ): Node<T>
+	private pathToNode( tree, path: string | Node<T> ): Node<T>
 	{
-		if ( typeof path === 'string' )
+		if ( typeof path !== 'string')
 		{
-			const found = find( this.tree, ( x: Node<T> ) => x.data.chunks.find( ch => ch.fullPath === path ));
-			if ( ! found ) throw new Error( `Node '${ path }' cannot be found.` );
-			
-			return found
-		}
+			path = path.data.chunks[0].fullPath
+		} 
 
-		return path;
+		const found = find( tree, ( x: Node<T> ) => x.data.chunks.find( ch => ch.fullPath === path ));
+		if ( ! found ) throw new Error( `Node '${ path }' cannot be found.` );
+		
+		return found
 	}
 
 	private createPipeline( steps: any[] )
