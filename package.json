@@ -6,7 +6,7 @@
   },
   "homepage": "https://github.com/tomasbonco/paths-tree-unist",
   "license": "MIT",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/node/index.js",
   "module": "dist/browser/index.js",
   "scripts": {
@@ -19,6 +19,7 @@
 	"watch:browser": "ttsc -w -p tsconfig.json --outDir dist/browser -m ES6",
 	"prepublish": "npm run build"
   },
+  "files": [ "dist" ],
   "dependencies": {
     "unist-util-find": "^1.0.1",
     "unist-util-map": "^2.0.1",

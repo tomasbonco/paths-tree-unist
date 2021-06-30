@@ -36,10 +36,12 @@ export interface InputEntry
 {
 	path: string;
 	data: any;
+	type?: string;
 }
 
 export interface IOptions<T>
 {
+	delimiter: RegExp;
 	defaultOpen: boolean;
 	isDuplicate: Filter<Node<T>>;
 }
